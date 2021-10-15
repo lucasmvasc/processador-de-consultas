@@ -24,3 +24,13 @@ class Grafo {
     addEdges(edges) { this.edges.push(edges); }
 
 }
+
+class Node {
+    constructor(symbol) { this.symbol = symbol; }
+}
+
+class Edge {
+    constructor(next) { 
+        this.next = next
+    }
+}
