@@ -1,6 +1,6 @@
 class Grafo {
 
-    constructor(nodes, edges) {
+    constructor() {
         this.nodes = [];
         this.edges = [];
     }
@@ -26,11 +26,20 @@ class Grafo {
 }
 
 class Node {
-    constructor(symbol) { this.symbol = symbol; }
+    constructor(value, type, id) { 
+        this.value = value;
+        this.type = type;
+        this.id = id
+    }
 }
 
 class Edge {
-    constructor(next) { 
-        this.next = next
+    constructor(actualNodeId, nextNodeId) { 
+        this.actualNodeId = actualNodeId;
+        this.nextNodeId = nextNodeId;
+    }
+
+    next() {
+        return this.nextNodeId;
     }
 }
