@@ -24,39 +24,38 @@ const validate = (arr) => {
     let join = arr.filter(el => el.value == 'JOIN')
     
     let fromRef = arr.find(el => el.id == from.id + 1)
-    if(!Object.keys(database).map(el => el.toLowerCase()).includes(fromRef.value.toLowerCase())) return false
+    if(!includesTable(fromRef.value)) return false
 
     let selectRef = arr.find(el => el.id == select.id + 1)
     if(selectRef.value !== '*'){
         selectRef.value.forEach(attr => {
-            if(!database[Object.keys(database).find(key => key.toLowerCase() === fromRef.value.toLowerCase())]
-                .map(el => el.toLowerCase()).includes(attr.toLowerCase())) return false
+            if(!includesAttribute(fromRef.value, attr)) return false
         })
     }
 
     if(where){
         let whereRef = arr.find(el => el.id == where.id + 1)
-        if(!database[Object.keys(database).find(key => key.toLowerCase() === fromRef.value.toLowerCase())]
-            .map(el => el.toLowerCase()).includes(whereRef.value.lhs.toLowerCase())) return false
+        if(!includesAttribute(fromRef.value, whereRef.value.lhs)) return false
     }
 
     if(join){
         join.forEach(obj => {
             let joinRef = arr.find(el => el.id == obj.id + 1)
-            if(!Object.keys(database).map(el => el.toLowerCase()).includes(joinRef.value.toLowerCase())) return false
+            if(!includesTable(joinRef.value)) return false
             
             if(arr.find(el => el.id == obj.id + 2).type !== 'command') return false
 
             let onRef = arr.find(el => el.id == obj.id + 3) //retorna um comparison
-            if(!database[Object.keys(database).find(key => key.toLowerCase() === fromRef.value.toLowerCase())]
-                .map(el => el.toLowerCase()).includes(onRef.value.lhs.toLowerCase())) return false
-            if(!database[Object.keys(database).find(key => key.toLowerCase() === joinRef.value.toLowerCase())]
-                .map(el => el.toLowerCase()).includes(onRef.value.rhs.toLowerCase())) return false
+            if(!includesAttribute(fromRef.value, onRef.value.lhs)) return false
+            if(!includesAttribute(joinRef.value, onRef.value.rhs)) return false
         })
     }
 
     return true
 }
+
+const includesTable = (value) => Object.keys(database).map(el => el.toLowerCase()).includes(value.toLowerCase())
+const includesAttribute = (table, value) => database[Object.keys(database).find(key => key.toLowerCase() === table.toLowerCase())].map(el => el.toLowerCase()).includes(value.toLowerCase())
 
 console.log(validate(test))
 
