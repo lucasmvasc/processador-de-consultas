@@ -28,9 +28,10 @@ const validate = (arr) => {
 
     let selectRef = arr.find(el => el.id == select.id + 1)
     if(selectRef.value !== '*'){
-        selectRef.value.forEach(attr => {
-            if(!includesAttribute(fromRef.value, attr)) return false
-        })
+        for(let i = 0; i < selectRef.value.length; i++){
+            if(!includesAttribute(fromRef.value, selectRef.value[i])) return false
+
+        }
     }
 
     if(where){
@@ -39,16 +40,16 @@ const validate = (arr) => {
     }
 
     if(join){
-        join.forEach(obj => {
-            let joinRef = arr.find(el => el.id == obj.id + 1)
+        for(let i = 0; i < join.length; i++){
+            let joinRef = arr.find(el => el.id == join[i].id + 1)
             if(!includesTable(joinRef.value)) return false
             
-            if(arr.find(el => el.id == obj.id + 2).type !== 'command') return false
+            if(arr.find(el => el.id == join[i].id + 2).type !== 'command') return false
 
-            let onRef = arr.find(el => el.id == obj.id + 3) //retorna um comparison
+            let onRef = arr.find(el => el.id == join[i].id + 3) //retorna um comparison
             if(!includesAttribute(fromRef.value, onRef.value.lhs)) return false
             if(!includesAttribute(joinRef.value, onRef.value.rhs)) return false
-        })
+        }
     }
 
     return true
@@ -58,5 +59,3 @@ const includesTable = (value) => Object.keys(database).map(el => el.toLowerCase(
 const includesAttribute = (table, value) => database[Object.keys(database).find(key => key.toLowerCase() === table.toLowerCase())].map(el => el.toLowerCase()).includes(value.toLowerCase())
 
 console.log(validate(test))
-
-// TODO: Verificar se um retorno dentro do forEach retorna fora
