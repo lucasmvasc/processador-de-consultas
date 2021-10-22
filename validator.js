@@ -14,7 +14,8 @@ let test = [
     {value: 'usuario', type: 'database', id: 3},
     {value: 'JOIN', type: 'command', id: 4},
     {value: 'Contas', type: 'database', id: 5},
-    {value: { lhs: 'idusuario', operator: '=', rhs: 'Usuario_idUsuario' }, type: 'comparison', id: 6}
+    { value: 'ON', type: 'command', id: 6 },
+    {value: { lhs: 'idusuario', operator: '=', rhs: 'Usuario_idUsuario' }, type: 'comparison', id: 7 }
 ]
 
 const validate = (arr) => {
@@ -24,15 +25,7 @@ const validate = (arr) => {
     let join = arr.filter(el => el.value == 'JOIN')
     
     let fromRef = arr.find(el => el.id == from.id + 1)
-    if(!includesTable(fromRef.value)) return false
-
-    let selectRef = arr.find(el => el.id == select.id + 1)
-    if(selectRef.value !== '*'){
-        for(let i = 0; i < selectRef.value.length; i++){
-            if(!includesAttribute(fromRef.value, selectRef.value[i])) return false
-
-        }
-    }
+    if(!includesTable(fromRef.value)) return [false, "from"]
 
     if(where){
         let whereRef = arr.find(el => el.id == where.id + 1)
@@ -49,6 +42,20 @@ const validate = (arr) => {
             let onRef = arr.find(el => el.id == join[i].id + 3) //retorna um comparison
             if(!includesAttribute(fromRef.value, onRef.value.lhs)) return false
             if(!includesAttribute(joinRef.value, onRef.value.rhs)) return false
+
+            let selectRef = arr.find(el => el.id == select.id + 1)
+            if(selectRef.value !== '*'){
+                for(let i = 0; i < selectRef.value.length; i++){
+                    if(!includesAttribute(fromRef.value, selectRef.value[i]) && !includesAttribute(joinRef.value, selectRef.value[i])) return false
+                }
+            }
+        }
+    } else {
+        let selectRef = arr.find(el => el.id == select.id + 1)
+        if(selectRef.value !== '*'){
+            for(let i = 0; i < selectRef.value.length; i++){
+                if(!includesAttribute(fromRef.value, selectRef.value[i])) return false
+            }
         }
     }
 
