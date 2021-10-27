@@ -1,14 +1,3 @@
-let sample1 = `Select * from Usuario Where UF = 'CE';`
-let sample2 = `Select Nome, Datanascimento, idConta, Descricao From usuario join Contas On (idusuario = Usuario_idUsuario);`
-let sample3 = `Select idUsuario as 'ID', U.Nome, Descricao, SaldoInicial From Usuario Join Contas ON (idUsuario = Usuario_idUsuario);`
-let sample4 = `SELECT usuario.idUsuario, usuario.Nome, contas.idConta, contas.Descricao,
-contas.usuario_idUsuario, totmov.valor
-FROM Usuario
-Join contas
-ON (Usuario.idusuario = contas.usuario_idusuario)
-Join TotMov
-On (totMov.Cod = contas.idconta);`
-
 // classification main function
 const parse = (query) => {
     query = query.replace(/(\r\n|\n|\r)/gm, " ") // remove line breaks
@@ -49,30 +38,32 @@ const parse = (query) => {
         if(current.type == 'database'){
             if(current.value.includes(',')) current.value = convertToArray(current.value)
             else if(current.value.includes('(')) {
-                classified.push({
+                classified[current.id] = {
                     value: { lhs: current.value.split('(')[1], operator: classified[current.id+1].value, rhs: classified[current.id+2].value.split(")")[0] }, 
                     type: 'comparison', 
                     id: current.id
-                })
-                classified.splice(i, 1)
-                classified.splice(i, 1)
-                classified.splice(i, 1)
+                }
+                classified[current.id+1].type = "null"
+                classified[current.id+2].type = "null"
             }
             else if(classified[current.id+1].type == 'operator'){
-                classified.push({
+                classified[current.id] = {
                     value: { 
                         lhs: current.value.includes('(') ? current.value.split('(')[1] : current.value, 
                         operator: classified[current.id+1].value, 
                         rhs: current.value.includes(')') ? classified[current.id+2].value.split(")")[0] : classified[current.id+2].value}, 
                     type: 'comparison', 
                     id: current.id
-                })
-                classified.splice(i, 1)
-                classified.splice(i, 1)
-                classified.splice(i, 1)
+                }
+                classified[current.id+1].type = "null"
+                classified[current.id+2].type = "null"
             }
         }
     }
+
+    classified = classified.filter(el => el.type !== "null")
+    classified = classified.map((el, idx) => { return {...el, id: idx}})
+    console.log(classified)
 
     return classified
 }
@@ -82,7 +73,9 @@ const isCommand = (word) => word.toUpperCase().match(/^(SELECT|FROM|WHERE|JOIN|O
 const isOperator = (word) => word.toUpperCase().match(/=|>|<|<=|>=|AND|IN|NOT/) !== null
 const convertToArray = (words) => words.split(',').map(el => el.trim())
 
-console.log(parse(sample1))
+module.exports = {
+    parse
+}
 
 /*
 [

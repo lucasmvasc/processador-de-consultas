@@ -7,17 +7,6 @@ const database = {
     "Categoria": ["idCategoria", "DescCategoria"]
 }
 
-let test = [
-    {value: 'SELECT', type: 'command', id: 0},
-    {value: ['Nome', 'Datanascimento', 'idConta', 'Descricao'], type: 'database', id: 1},
-    {value: 'FROM', type: 'command', id: 2},
-    {value: 'usuario', type: 'database', id: 3},
-    {value: 'JOIN', type: 'command', id: 4},
-    {value: 'Contas', type: 'database', id: 5},
-    { value: 'ON', type: 'command', id: 6 },
-    {value: { lhs: 'idusuario', operator: '=', rhs: 'Usuario_idUsuario' }, type: 'comparison', id: 7 }
-]
-
 const validate = (arr) => {
     let select = arr.find(el => el.value == 'SELECT')
     let from = arr.find(el => el.value == 'FROM')
@@ -63,6 +52,13 @@ const validate = (arr) => {
 }
 
 const includesTable = (value) => Object.keys(database).map(el => el.toLowerCase()).includes(value.toLowerCase())
-const includesAttribute = (table, value) => database[Object.keys(database).find(key => key.toLowerCase() === table.toLowerCase())].map(el => el.toLowerCase()).includes(value.toLowerCase())
+const includesAttribute = (table, value) => {
+    if(value.includes("."))
+        return database[Object.keys(database).find(key => key.toLowerCase() === table.toLowerCase())].map(el => el.toLowerCase()).split('.')[1].includes(value.toLowerCase())
+    else
+        return database[Object.keys(database).find(key => key.toLowerCase() === table.toLowerCase())].map(el => el.toLowerCase()).includes(value.toLowerCase())
+}
 
-console.log(validate(test))
+module.exports = {
+    validate
+}

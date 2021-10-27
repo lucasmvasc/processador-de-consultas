@@ -76,49 +76,86 @@ const fillGraph = (nodeArray) => {
     })
 
     let nodes = graph.getNodes()
+
     let select = nodes.find(el => el.value == 'SELECT')
     let from = nodes.find(el => el.value == 'FROM')
     let where = nodes.find(el => el.value == 'WHERE')
     let join = nodes.find(el => el.value == 'JOIN')
     let on = nodes.find(el => el.value == 'ON')
 
-    if (select) {
-        let selectRef = nodes.find(el => el.id == select.id + 1)
+    let selectRef = select ? nodes.find(el => el.id == select.id + 1) : null
+    let whereRef = where ? nodes.find(el => el.id == where.id + 1 ): null
+    let fromRef = from ? nodes.find(el => el.id == from.id + 1) : null
+    let joinRef = join ? nodes.find(el => el.id == join.id + 1) : null
+    let onRef = on ? nodes.find(el => el.id == on.id + 1) : null
 
-        if (selectRef.value == '*') {
-            if (where) {
-                selectRef.symbol = `${whereRef.value.lhs} ${whereRef.value.operator} ${whereRef.value.rhs}`
-                select.symbol = 'σ'
+    if (selectRef.value == '*') {
+        if (where) {
+            selectRef.symbol = `${whereRef.value.lhs} ${whereRef.value.operator} ${whereRef.value.rhs}`
+            select.symbol = 'σ'
 
-                edge = new Edge(select, selectRef)
-                graph.addEdge(edge)
-            }
+            let edge = new Edge(select, selectRef)
+            graph.addEdge(edge)
+ 
+            fromRef.symbol = fromRef.value
+            let edge2 = new Edge(select, fromRef)
+            graph.addEdge(edge2)
 
-            else if (join) {
-                join.symbol = '⋈'
-                fromRef = nodes.find(el => el.id == from.id + 1)
-                joinRef = nodes.find(el => el.id == join.id + 1)
-                onRef = nodes.find(el => el.id == on.id + 1)
-
-
-                fromRef.symbol = fromRef.value
-                onRef.symbol = `${onRef.value.lhs} ${onRef.value.operator} ${onRef.value.rhs}`
-                joinRef.symbol = joinRef.value
-
-                edge1 = new Edge(join, fromRef)
-                edge2 = new Edge(join, joinRef)
-                edge3 = new Edge(join, onRef)
-
-                graph.addEdges({edge1,edge2,edge3})
-            }
-
-        } else {
-            selectRef.symbol = selectRef.value
-            select.symbol = 'π'
-            graph.addEdge(select, selectRef)
         }
 
+        else if (join) {
+            join.symbol = '⋈'
+
+            fromRef.symbol = fromRef.value
+            onRef.symbol = `${onRef.value.lhs} ${onRef.value.operator} ${onRef.value.rhs}`
+            joinRef.symbol = joinRef.value
+
+            let edge1 = new Edge(join, fromRef)
+            let edge2 = new Edge(join, joinRef)
+            let edge3 = new Edge(join, onRef)
+
+            graph.addEdges([edge1,edge2,edge3])
+        }
+
+    } else {
+        selectRef.symbol = selectRef.value
+        select.symbol = 'π'
+
+        let edge = new Edge(select, selectRef)
+        graph.addEdge(edge)
+
+        if (where) {
+            where.symbol = 'σ'
+            let edge = new Edge(select, where)
+            graph.addEdge(edge)
+            
+            whereRef.symbol = `${whereRef.value.lhs} ${whereRef.value.operator} ${whereRef.value.rhs}`
+            let edge1 = new Edge(where, whereRef)
+            graph.addEdge(edge1)
+             
+            fromRef.symbol = fromRef.value
+            let edge2 = new Edge(where, fromRef)
+            graph.addEdge(edge2)
+        }
+
+        else if (join) {
+            join.symbol = '⋈'
+
+            let edge = new Edge(select, join)
+            graph.addEdge(edge)
+
+            fromRef.symbol = fromRef.value
+            onRef.symbol = `${onRef.value.lhs} ${onRef.value.operator} ${onRef.value.rhs}`
+            joinRef.symbol = joinRef.value
+
+            let edge1 = new Edge(join, fromRef)
+            let edge2 = new Edge(join, joinRef)
+            let edge3 = new Edge(join, onRef)
+
+            graph.addEdges([edge1,edge2,edge3])
+        }
     }
+
 
     console.log(graph.nodes)
     graph.edges.forEach(el => {
@@ -126,11 +163,14 @@ const fillGraph = (nodeArray) => {
     })
 }
 /*
-* TODO: Add more cases to select ELSE scenario (JOIN and WHERE)
+* TODO: Fix validator error;
 * TODO: Think in another possible cases to be handled by the graph
 * TODO: Create the basics for the UI such as: 
         • Textarea for the sql query
         • Button for submit
         • Graph
 */
-fillGraph(test2)
+
+module.exports = {
+    fillGraph
+}
