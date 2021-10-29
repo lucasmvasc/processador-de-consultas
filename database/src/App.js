@@ -1,4 +1,4 @@
-
+import { useState } from 'react'
 import { OrgDiagram } from 'basicprimitivesreact';
 import { PageFitMode, Enabled, ChildrenPlacementType } from 'basicprimitives';
 import { validate } from './helpers/validator';
@@ -7,7 +7,9 @@ import { fillGraph } from './helpers/graph';
 import './App.css';
 
 const App = () => {
-  const config = {
+  const [showGraph, setShowGraph] = useState(false)
+  const [showError, setShowError] = useState(false)
+  const [config, setConfig] = useState({
     pageFitMode: PageFitMode.None,
     maximumColumnsInMatrix: 2,
     cursorItem: 1,
@@ -17,36 +19,48 @@ const App = () => {
     defaultTemplateName: "info",
     templates: [{
       name: "info",
-      itemSize: { width: 80, height: 40 },
       minimizedItemSize: { width: 3, height: 3 },
       highlightPadding: { left: 4, top: 4, right: 4, bottom: 4 },
       onItemRender: ({ context: itemConfig }) => {
         return <div className="InfoTemplate">{itemConfig.title}</div>;
       }
     }],
-    hasSelectorCheckbox: Enabled.False,
-    items: [
-      /* horizontal layout example */
-      {
-        id: 201,
-        parent: null,
-        title: "Horizontal Layout",
-        childrenPlacementType: ChildrenPlacementType.Horizontal
-      },
-      { id: 202, parent: 201, title: "Child 1" },
-      { id: 203, parent: 201, title: "Child 2" },
-      { id: 204, parent: 201, title: "Child 3" }
-    ]
-  };
+    hasSelectorCheckbox: Enabled.False
+  })
 
   const clickHandler = () => {
     let query = document.getElementsByClassName('form-control')[0].value
-    let obj = parse(query)
-    if(validate(obj)) {
-        let graph = fillGraph(obj)
-        graph.edges.forEach(edge => {console.log(edge)})
-    }
 
+    try {
+      let obj = parse(query)
+      if(validate(obj)) {
+        let graph = fillGraph(obj)
+        let items = []
+
+        graph.nodes.filter((el) => el.symbol !== '').forEach(node => {
+          items.push({id: node.id, title: formatSymbol(node.symbol)})
+        })
+
+        graph.edges.forEach(edge => {
+          items.find(el => el.id == edge.nextNodeId.id).parent = edge.previousNodeId.id
+        })
+
+        let start = items.find(el => !el.parent)
+        start.parent = null
+        start.childrenPlacementType = ChildrenPlacementType.Horizontal
+
+        setConfig({...config, items: items})
+        setShowGraph(true)
+        setShowError(false)
+      }
+    } catch (error) {
+      setShowGraph(false)
+      setShowError('Consulta SQL inválida!')
+    }
+  }
+
+  const formatSymbol = (symbol) => {
+    return (typeof symbol == 'object') ? symbol.join(', ') : symbol
   }
 
   return (<>
@@ -56,8 +70,11 @@ const App = () => {
       <textarea className="form-control" aria-label="Digite sua consulta SQL"></textarea>
     </div>
     <button type="button" className="btn btn-primary" onClick={clickHandler}>Mostrar resultado</button>
-    <div id="placeholder"><OrgDiagram centerOnCursor={true} config={config} />  </div>
-    
+
+    {showGraph &&
+    <div id="placeholder"><OrgDiagram centerOnCursor={true} config={config}/></div>}
+
+    {showError && <p className="text-danger">{showError}</p>}
   </>);
 }
 
