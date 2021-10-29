@@ -63,7 +63,6 @@ const parse = (query) => {
 
     classified = classified.filter(el => el.type !== "null")
     classified = classified.map((el, idx) => { return {...el, id: idx}})
-    console.log(classified)
 
     return classified
 }
